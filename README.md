@@ -62,8 +62,8 @@ in
 
 | Use Case # | Focus Area                        | 💼 Business Problem Solved                        | 🌟 Strategic Benefit                                | Related Queries |
 |------------|-----------------------------------|--------------------------------------------------|-----------------------------------------------------|----------------|
-| 1          | Sales & Inventory Optimization    | Inaccurate demand planning                       | Improved stock planning and marketing               | Q22, Q23       |
-| 2          | Product Lifecycle Strategy        | Suboptimal timing of product launches/EOL        | Smarter launches and end-of-life decisions          | Q22, Q24–Q27   |
+| 1          | Sales & Inventory Optimization    | Inaccurate demand planning                       | Improved stock planning and marketing               | [Q22](#22-analyze-sales-trends-of-product-over-time-segmented-into-key-time-periods-from-launch-to-6-months-6-12-months-12-18-months-and-beyond-18-months), [Q23](#23-advanced-warranty-claim-trends-analyze-trends-in-warranty-claims-compared-to-product-sales-over-the-past-two-years-from-the-last-sales-date-available)       |
+| 2          | Product Lifecycle Strategy        | Suboptimal timing of product launches/EOL        | Smarter launches and end-of-life decisions          | [Q22](#22-analyze-sales-trends-of-product-over-time-segmented-into-key-time-periods-from-launch-to-6-months-6-12-months-12-18-months-and-beyond-18-months), Q24–Q27   |
 | 3          | Warranty & Customer Support       | High service costs and poor claim insights       | Reduced warranty costs and improved satisfaction    | Q4, Q11–Q14, Q16, Q29, Q31, Q33 |
 | 4          | Market Segmentation               | One-size-fits-all promotions                     | More targeted regional marketing                    | Q10, Q15, Q17, Q30 |
 | 5          | Store Operational Efficiency      | Inconsistent performance across stores           | Operational benchmarking and resource optimization  | Q8–Q9, Q18, Q21 |
