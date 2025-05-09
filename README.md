@@ -58,6 +58,22 @@ in
 ```
 
 
+### 📊 Use Case Summary Table
+
+| Use Case # | Focus Area                        | 💼 Business Problem Solved                        | 🌟 Strategic Benefit                                | Related Queries |
+|------------|-----------------------------------|--------------------------------------------------|-----------------------------------------------------|----------------|
+| 1          | Sales & Inventory Optimization    | Inaccurate demand planning                       | Improved stock planning and marketing               | Q22, Q23       |
+| 2          | Product Lifecycle Strategy        | Suboptimal timing of product launches/EOL        | Smarter launches and end-of-life decisions          | Q22, Q24–Q27   |
+| 3          | Warranty & Customer Support       | High service costs and poor claim insights       | Reduced warranty costs and improved satisfaction    | Q4, Q11–Q14, Q16, Q29, Q31, Q33 |
+| 4          | Market Segmentation               | One-size-fits-all promotions                     | More targeted regional marketing                    | Q10, Q15, Q17, Q30 |
+| 5          | Store Operational Efficiency      | Inconsistent performance across stores           | Operational benchmarking and resource optimization  | Q8–Q9, Q18, Q21 |
+| 6          | Pricing & Profitability           | Pricing misalignment with customer value         | Better margin control and competitive pricing       | Q7, Q19        |
+| 7          | Warranty Risk Prediction          | Reactive service model                           | Brand trust and proactive service design            | Q12, Q19, Q29, Q31, Q33|
+| 8          | Product Bundling/Upselling        | Missed cross-sell opportunities                  | Boost in AOV and customer retention                 | Q28            |
+| 9          | Sales Trend Tracking              | Inability to react to sales shifts quickly       | Quicker marketing or stocking adjustments           | Q21–Q22   |
+| 10         | Product Gap/Opportunity Detection | Ignoring unloved but service-heavy products      | Data-driven relaunch or discontinuation decisions   | Q32            |
+
+
 
 
 ### 1) What is the total number of units sold by each store?
@@ -678,204 +694,123 @@ same as 26.
   
 ### 28) Market Basket Analysis: Perform a market basket analysis to find products frequently purchased together.
 
-
--- P-40 & P-49 were bought together more frequently and P-23 & P-9 less frequently
-
-
-CREATE INDEX idx_sale_date_product_id ON fact_sales(sale_date, product_id);
+MacBook Pro (M1 Max, 16-inch) & AirTag are frequently purchased together and iPhone 11 Pro Max & Apple Watch Series 3 are the least bought bundle.
 
 
-```
-WITH limited_sales AS (
-		  SELECT sale_date,product_id
-		  FROM fact_sales
-		  ORDER BY sale_date
-  
-),
-product_pairs AS (
-		  SELECT
-			a.sale_date,
-			a.product_id AS product_a,
-			b.product_id AS product_b
-		  FROM
-			limited_sales a
-		  JOIN
-			limited_sales b
-			ON a.sale_date = b.sale_date AND a.product_id < b.product_id
-)
+![Slide28](https://github.com/user-attachments/assets/d8be2b5a-762a-4a4b-981c-59a32faba459)
 
-SELECT
-  product_a,
-  product_b,
-  COUNT(*) AS times_bought_together
-FROM
-  product_pairs
-GROUP BY
-  product_a, product_b
-ORDER BY
-  times_bought_together DESC;
- ``` 
-  
+#### 🧺 Product Bundling & Upselling 
+#### Business Use Case: Market Basket Analysis — Identify products frequently bought together to inform bundling, promotions, and layout optimization.
+
+#### Business Problem Solved:
+
+Difficult to manually uncover frequent purchase combinations.
+
+Missed cross-sell opportunities across product lines.
+
+#### Strategic Benefits:
+
+🎯 Targeted Promotions: Enable product bundling and combo deals to drive sales.
+
+🛒 Store & App Layout Optimization: Place complementary products near each other.
+
+📈 Boost Average Order Value (AOV): Encourage customers to purchase more in a single transaction.
   
 ### 29) Warranty Claim Rate per product
 
 -- iPad Air (4th Gen) has the highest warranty claim rate
 
-```
-SELECT
-	product_name,
-	COUNT(claim_id)*100.0/COUNT(fact_sales.sale_id) AS warranty_claim_rate
-FROM
-   dim_product
-INNER JOIN 
-   fact_sales 
-   USING(product_id)
-LEFT JOIN
-   fact_warranty
-   USING(sale_id)
-GROUP BY 
-   product_name
-ORDER BY 
-   warranty_claim_rate DESC;
-```  
-   
+![Slide29](https://github.com/user-attachments/assets/1414ec84-5807-47c3-8007-9a4125bdb7a9)
+
+#### 🛠️ Warranty Claim Rate per Product
+#### 🔍 Business Use Case
+Analyze the reliability and quality of individual products by measuring how often customers file warranty claims.
+
+#### ✅ Business Problem Solved
+
+Identifies low-performing or defect-prone products.
+
+Enables manufacturers and retailers to proactively improve product quality or provide additional support.
+
+Supports product recalls or redesign decisions with data.
+
+##### 🎯 Strategic Benefit
+
+Improves customer satisfaction and brand trust.
+
+Reduces long-term support costs.
+
+Enhances forecasting for warranty reserve funds.  
 
 ### 30) Show store-product pairs with consistent sales every month in 2023.
 
-*/
 
 -- no store, product pairs have any consistent sales every month in 2023
+![Slide30](https://github.com/user-attachments/assets/927436d1-ca93-4e4a-80f0-9ede70a58b19)
 
-```
-WITH store_sales AS (
-SELECT 
-	Store_id,
-	Product_id,
-    sale_date,
-    YEAR(Sale_date) AS year	
-FROM 
-	fact_sales
-),
-store_sales_2023 AS (
-SELECT 
-	Store_id,
-	Product_id,
-    sale_date
-FROM 
-	store_sales
-WHERE
-    year=2023
-)
 
-SELECT
-	store_id,
-	product_id,
-    COUNT(DISTINCT MONTH(Sale_date)) AS num_monthly_sales
-FROM
-    store_sales_2023 
-GROUP BY 
-    Store_id, Product_id
-HAVING 
-     num_monthly_sales = 12
-;
-```
+#### 🔍 Business Use Case:
+Identify store-product pairs that demonstrated consistent monthly sales in 2023, indicating stable demand and customer loyalty.
+
+#### 🧩 Business Problem Solved:
+Detects products with reliable, predictable performance across stores, helping reduce inventory volatility and streamline replenishment.
+
+#### 🚀 Strategic Benefit:
+Enables more accurate demand forecasting, strengthens store-level assortment planning, and helps prioritize supply chain focus for steady performers.
+
 
 
 ### 31) Compute the lag in days between each sale and its corresponding warranty claim (if any), and rank the top 5 fastest claims. 
+15 to 19 days for the top 5 fastest claims.
+![Slide31](https://github.com/user-attachments/assets/4bfa7404-7e82-47e0-8be5-0cc9be40454b)
 
-```
-WITH warranty_claim_sales AS ( 
-			SELECT
-			fact_sales.sale_id,
-			DATEDIFF(claim_date,sale_date) AS lag_in_days_for_warranty_claim
-			FROM
-			fact_sales
-			INNER JOIN
-			fact_warranty
-			USING(sale_id)
-),
-ranking AS (
-			SELECT
-			sale_id,
-			lag_in_days_for_warranty_claim,
-			DENSE_RANK() OVER(ORDER BY lag_in_days_for_warranty_claim ASC) AS ranking
-			FROM
-			 warranty_claim_sales 
-)
+#### Business Use Case: Fastest Warranty Claim Resolution 
+### Business Problem Solved: Uncovers product or process failures causing immediate issues post-sale, enabling quality and operational improvements.
 
-SELECT
-	sale_id,
-	lag_in_days_for_warranty_claim
-FROM
-    ranking
-WHERE
-    ranking<=5;
-``` 
-
-
+### Strategic Benefit: Accelerates root-cause identification for rapid product feedback loops and proactive quality assurance.
 
 ### 32) Identify products that haven’t been sold in the past year but had warranty claims. 
 -- iphone X, ipad (6th Gen), Apple Watch Series 4, iphone XS
+![Slide32](https://github.com/user-attachments/assets/450b80a4-058b-427b-a6cc-96fcf549f8ef)
 
-```
-WITH ProductsWithSalesLastYear AS (
-			SELECT DISTINCT product_id
-			FROM fact_sales
-			WHERE YEAR(sale_date) = (SELECT YEAR(MAX(sale_date))-1 FROM fact_sales) 
-),
-ProductsWithWarrantyClaims AS (
-			SELECT DISTINCT product_id
-			FROM fact_warranty
-			INNER JOIN fact_sales USING(sale_id) -- Link warranty claim to sale
-)
+#### 💼 Business Use Case:
+Flag products that haven’t been sold recently but continue to generate warranty claims.
 
-SELECT 
-   DISTINCT p.product_name
-FROM 
-   dim_product p
-INNER JOIN 
-   ProductsWithWarrantyClaims w ON p.product_id = w.product_id
-LEFT JOIN 
-   ProductsWithSalesLastYear s ON p.product_id = s.product_id
-WHERE 
-   s.product_id IS NULL;
-```
+#### 🧩 Business Problem Solved:
+Detects lingering product quality issues long after the sales cycle.
+
+Highlights the need for continued post-sale support even when a product is out of rotation.
+
+Prevents blind spots in support planning and spare parts availability.
+
+#### 🌟 Strategic Benefit:
+Ensures proactive warranty service continuity.
+
+Improves customer experience and trust, especially for legacy products.
+
+Informs better retirement strategies and warranty reserve planning.
 
 
 
-### 33) Calculate the average time to warranty claim per category and rank them */
+### 33) Calculate the average time to warranty claim per category and rank them 
+Subscription Service with the  lowest average time to warranty claim of 143 days.
+Accessory with the highest  average time to warranty claim of 196 days.
 
-```
-WITH category_analysis AS (
-			SELECT
-				category_name,
-				AVG(DATEDIFF(claim_date,sale_date)) AS avg_no_days_to_warranty_claim
-			FROM
-			    fact_sales
-			LEFT JOIN
-			    fact_warranty
-			    USING(sale_id)
-			INNER JOIN
-			    dim_product
-			    ON fact_sales.product_id=dim_product.product_id
-			INNER JOIN
-			    dim_category
-			    ON dim_product.category_id=dim_category.category_id
-			GROUP BY
-			    category_name
-			ORDER BY
-			    avg_no_days_to_warranty_claim DESC
-)
+![Slide33](https://github.com/user-attachments/assets/d23f395f-06b2-4ca1-84d4-f82f0efd9912)
 
-SELECT
-	category_name,
-	avg_no_days_to_warranty_claim,
-	DENSE_RANK() OVER(ORDER BY avg_no_days_to_warranty_claim ASC) AS ranking
-FROM
-    category_analysis ;
-```
+#### 💼 Business Use Case:
+Category-Level Warranty Claim Response Monitoring
 
+#### 🧩 Business Problem Solved:
+Surfaces which product categories tend to experience faster or delayed warranty issues.
 
+Reveals hidden product quality trends at a category level.
 
+Informs resource allocation for support teams by category priority.
 
+#### 🌟 Strategic Benefit:
+Drives continuous product improvement by targeting underperforming categories.
 
+Improves category-specific quality assurance processes.
+
+Enables targeted risk mitigation, reducing potential brand damage and support costs.
