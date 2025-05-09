@@ -64,1011 +64,614 @@ in
 -- Apple South Coast Plaza had sold the highest units of 47498.
 -- Apple Sheffield had sold the lowest units of 647.
 
+![1](https://github.com/user-attachments/assets/7ceb9edc-e238-40a9-a9ed-5a55fc224fb5)
 
+#### 💼 Business Use Case:
+Measure store-wise product movement to optimize resource allocation and sales performance tracking.
 
-```
-SELECT
-    st.store_name AS store_name,
-    SUM(sa.quantity) AS units_sold
-FROM
-    (SELECT store_id, store_name FROM dim_store ORDER BY store_id) st
-JOIN
-    (SELECT store_id, quantity FROM fact_sales ORDER BY store_id) sa
-ON st.store_id = sa.store_id
-GROUP BY 
-    st.store_name
-ORDER BY 
-    units_sold DESC;
-```
+#### 🧩 Business Problem Solved:
+Reveals which stores contribute the most or least to overall sales volume.
+
+Helps identify underperforming or overperforming locations for operational benchmarking.
+
+Informs staffing, marketing, and stock replenishment decisions at the store level.
+
+#### 🌟 Strategic Benefit:
+Enables data-driven store performance management and investment prioritization across regions.
 
 
 ### 2)  Which stores did not make any sales in December 2023? 
 --              Apple Leeds, Apple Bristol, Apple Cardiff
 
-```
-WITH store AS (
-		SELECT
-		store_id, store_name
-		FROM 
-		dim_store
-		ORDER BY store_id
-		),
-store_with_sales AS  ( 
-		SELECT
-			store_id , SUM(quantity) AS units_sold
-		FROM
-			fact_sales
-		WHERE
-			fact_sales.sale_date >= '2023-12-01'
-			AND fact_sales.sale_date < '2024-01-01'
-		GROUP BY store_id
-		ORDER BY store_id
-		)
-SELECT
-    s.store_name, ss.units_sold
-FROM
-    store s 
-LEFT JOIN 
-    store_with_sales ss
-    USING(store_id)
-WHERE 
-    units_sold IS NULL
-GROUP BY 
-    s.store_id;
-```
+![2](https://github.com/user-attachments/assets/97b55bed-627f-4d85-9841-21f74d72b7ac)
 
+#### 🏪 Store Operational Efficiency
+#### Business Use Case:
+Identify underperforming or inactive stores during a specific period (e.g., December 2023).
+
+#### 💼 Business Problem Solved:
+
+Surfaces stores with zero sales activity, signaling potential operational or logistical issues.
+
+Enables targeted follow-up: staffing issues, supply chain gaps, or store closures.
+
+Supports decisions on resource reallocation, store audits, or promotional support.
+
+#### 🌟 Strategic Benefit:
+Improves store network productivity by detecting inefficiencies early and enabling prompt corrective action.
 
 
 ### 3) How many stores sold a product but never had a warranty claim filed against any of their products?
 -- 55
+![3](https://github.com/user-attachments/assets/e4ca6085-0860-4a56-a95b-183d8d55c667)
 
-```
-SELECT
-    COUNT(DISTINCT(store_id)) AS total_stores_without_claim
-FROM 
-    fact_sales
-WHERE 
-    store_id NOT IN (
-					SELECT
-					    s.store_id
-					FROM 
-					    fact_sales s
-					RIGHT JOIN 
-                        fact_warranty w
-					USING(sale_id)
-					);
-```
+
+#### 🏪 Store Sales Quality
+#### 💼 Business Problem Solved:
+
+Highlights stores with consistently reliable customer experiences.
+
+Identifies regions with potentially better handling, customer education, or sales practices.
+
+Flags discrepancies where poor post-sales tracking or underreporting may exist.
+
+#### 🌟 Strategic Benefit:
+
+Supports targeted knowledge sharing or training from high-performing stores.
+
+Enhances post-sales service monitoring and warranty cost forecasting.
+
+Improves brand trust by identifying and replicating high-quality retail practices.
+
+
 
 ### 4) What percentage of warranty claims are marked as "Warranty Void"?
 -- 23%
 
+![4](https://github.com/user-attachments/assets/f190bb3e-2f76-4121-bf99-fa6a186b5d9c)
 
-```
-SELECT
-    ROUND(((COUNT(CASE WHEN LOWER(repair_status) LIKE '%warranty void%' THEN 1 END) * 100) /
-    COUNT(claim_id)),0) AS pct_of_warranty_void_claims
-FROM fact_warranty;
-```
 
+#### 🛡️ Warranty Analytics & Policy Insights
+Query: What percentage of warranty claims are marked as "Warranty Void"?
+
+#### 💼 Business Use Case:
+Assess Warranty Claim Denial Trends to Enhance Transparency and Trust
+
+#### 🔍 Business Problem Solved:
+
+Identifies how often customer claims are denied due to policy limitations.
+
+Highlights potential mismatch between customer expectations and warranty coverage.
+
+Flags stores, regions, or products with unusually high void rates.
+
+#### 🌟 Strategic Benefit:
+
+Supports clearer warranty policy communication.
+
+Helps refine training, product quality control, or eligibility criteria.
+
+Strengthens customer experience and post-sales credibility.
 
 
 ### 5) Which store had the highest total units sold in the last year?
 
-```
-WITH last_year_stores_sales AS (
-				SELECT
-					ss.store_id, 
-					s.store_name,
-					SUM(ss.quantity) AS units_sold
-				FROM 
-				    fact_sales ss
-				JOIN 
-				    dim_store s 
-				    ON ss.store_id=s.store_id
-				    AND ss.sale_date>=(SELECT YEAR(MAX(sale_date))-1 FROM fact_sales) 
-				GROUP BY 
-                    ss.store_id,s.store_name
-),
-stores_rank AS (
-		SELECT
-			store_id,
-			store_name,
-			units_sold,
-			DENSE_RANK() OVER(ORDER BY units_sold DESC) AS units_sold_rank
-		FROM
-		    last_year_stores_sales
-)
-SELECT
-	store_name,
-	units_sold
-FROM
-    stores_rank 
-WHERE
-    units_sold_rank=1;
-```
+Apple South Coast Plaza	with 47498 units sold.
 
+![5](https://github.com/user-attachments/assets/aec9274d-22db-4118-9346-71ae8c80ca7f)
+
+#### 🏆 Use Case: Top Performing Stores
+#### 💼 Business Problem Solved:
+
+Identifies which store drives the highest volume, informing best practices and potential expansion strategies.
+
+Helps benchmark store performance and identify outliers (top and underperformers).
+
+Supports resource reallocation—staffing, marketing, inventory—to capitalize on high-performing stores.
+
+#### 🌟 Strategic Benefit:
+
+Enables data-driven decision making for location-based investments.
+
+Promotes internal knowledge sharing from top performers.
+
+Aligns with corporate growth and operational efficiency strategies.
 
 ### 6) Count the number of unique products sold in the last year.
 
-```
-SELECT
-    COUNT(DISTINCT(product_id)) as num_of_unique_products
-FROM 
-    fact_sales 
-WHERE
-    sale_date>=(SELECT YEAR(MAX(sale_date))-1 FROM fact_sales) ;
-```
+64
+![Slide6](https://github.com/user-attachments/assets/e0bdedb9-88fe-4f17-931e-329da6ea74d6)
 
+#### 🏬 Store Performance Benchmarking
+Use Case: Count the number of unique products sold in the last year.
+
+#### 💼 Business Problem Solved:
+
+Identifies product diversity sold at retail.
+
+Highlights underperforming stores or regions with low product variety.
+
+Assists in planning for restocking or new product introductions.
+
+#### 🌟 Strategic Benefit:
+
+Enables SKU rationalization and smarter assortment planning.
+
+Drives decisions on localized merchandising and promotions.
+
+Supports performance-linked compensation and store-level goals.
 
 
 
 ### 7) What is the average price of products in each category?
 --     among which, Laptop category had the highest avg price
 
-```
-SELECT
-	p.category_id, 
-	c.category_name,
-	ROUND(AVG(p.price),0) AS avg_price
-FROM
-    dim_product p 
-JOIN 
-    dim_category c
-    USING(category_id)
-GROUP BY
-	p.category_id,c.category_name
-ORDER BY 
-    avg_price DESC;
-```
+![Slide7](https://github.com/user-attachments/assets/ad446f99-f8b7-4a61-add1-9216bdb55ea4)
 
+#### 💰 Product Pricing Strategy
+Use Case: Calculate the average price of products in each category.
+
+#### 💼 Business Problem Solved:
+
+Enables understanding of price distribution across categories.
+
+Highlights pricing gaps or inconsistencies within product lines.
+
+Supports competitive analysis and price positioning.
+
+#### 🌟 Strategic Benefit:
+
+Helps in pricing strategy optimization, ensuring competitive but profitable pricing.
+
+Assists in category management, identifying areas for price adjustment.
+
+Guides promotional discounting decisions and margin protection.
 
 
 ### 8)  Identify each store and best-selling day with day_type based on the highest quantity sold.
 
+![Slide8](https://github.com/user-attachments/assets/d1b26a5c-9242-47b5-a9fa-d25643bf94fa)
 
-```
-WITH  sales_day AS (
-			SELECT
-			store_id,
-			DAYNAME(sale_date) AS day,
-			SUM(quantity) AS units_sold,
-			DENSE_RANK() OVER(PARTITION BY store_id ORDER BY SUM(quantity) DESC) AS position
-			FROM fact_sales
-			GROUP BY store_id,day
-) ,
-best_selling_day AS (
-			SELECT *
-			FROM
-			sales_day
-			WHERE position=1
-)
+#### 🏬 Store Sales Optimization
+Use Case: Identify the best-selling day for each store and the corresponding day type based on the highest quantity sold.
 
-SELECT 
-	s.store_name, 
-	bs.day, 
-	bs.units_sold, 
-	s.city, 
-	s.country,
-	CASE WHEN day IN ('saturday','sunday') THEN 'weekend' ELSE 'weekday' END AS day_type
-FROM
-    dim_store s
-INNER JOIN 
-    best_selling_day bs
-USING(store_id);
-```
+#### 💼 Business Problem Solved:
+
+Helps pinpoint optimal sales days for each store.
+
+Enables targeted promotional efforts and scheduling.
+
+Optimizes staffing and resource allocation on peak sales days.
+
+#### 🌟 Strategic Benefit:
+
+Drives improved store operations and performance.
+
+Provides actionable insights for marketing campaigns and inventory management.
+
 
 
 ### 9) What percentage of stores has the best selling day recorded on a weekend?
 --             33
+![Slide10](https://github.com/user-attachments/assets/da864f8b-db8f-4c39-bee7-0e0d99394ea4)
 
-```
-WITH sales_day AS (
-			SELECT
-				store_id,
-				DAYNAME(sale_date) AS day,
-				SUM(quantity) AS units_sold,
-				DENSE_RANK() OVER(PARTITION BY store_id ORDER BY SUM(quantity) DESC) AS position
-			FROM 
-                fact_sales
-			GROUP BY 
-                store_id,day
-),
+#### 🏬 Store Sales Optimization
+#### 💼 Business Problem Solved:
 
-best_selling_day AS (
-			SELECT 
-                store_id,
-                day,
-                units_sold
-			FROM
-			    sales_day
-			WHERE 
-                position=1
-),
+📊 Identifies stores with the highest sales on weekends.
+
+📈 Helps allocate resources like staff and inventory efficiently.
+
+🛒 Ensures products are stocked and staff is ready for high-demand days.
+
+#### 🌟 Strategic Benefit:
+
+🏆 Boosts sales potential by focusing resources where needed most.
+
+⏱️ Improves operational efficiency and enhances customer experience on peak days.
 
 
-best_selling_day_weektype AS (
-			SELECT 
-				s.store_name, 
-				bs.day, 
-				bs.units_sold, 
-				s.city, 
-				s.country,
-				CASE WHEN day IN ('saturday','sunday') THEN 'weekend' ELSE 'weekday' END AS week_type
-			FROM
-			    dim_store s
-			INNER JOIN 
-                best_selling_day bs
-			USING(store_id)
-)
 
-SELECT 
-	ROUND((COUNT(CASE WHEN week_type='weekend' THEN 1 END)*100
-	/COUNT(store_name) ),0) AS pct_best_selling_day_on_weekend
-FROM
-    best_selling_day_weektype;
-```
+### 10)  Identify the least-selling product of each country for each year based on the total units sold.
 
+![Slide10](https://github.com/user-attachments/assets/ef1ef2ab-28fd-4114-a667-823ea7c07215)
 
-### 10)  Identify least-selling product of each country for each year based on the total units sold.
+#### Business Use Case: 🔍 Analyze least-selling products per country per year to optimize product offerings.
 
-```
-WITH paroduct_sales_per_country AS  (
-		SELECT
-			s.country,
-			YEAR(ss.sale_date) AS year, 
-			ss.product_id, 
-			SUM(ss.quantity) AS total_quantity,
-			DENSE_RANK() OVER(PARTITION BY s.country, YEAR(ss.sale_date) ORDER BY s.country,YEAR(ss.sale_date), SUM(ss.quantity)) AS rank_quantity
-		FROM
-			dim_store s
-		JOIN
-			fact_sales ss 
-			ON s.store_id=ss.store_id
-		GROUP BY 
-			s.country,year,ss.product_id
-) 
-SELECT
-	c.country,
-	c.year,
-	p.product_name,
-	c.total_quantity
-FROM
-    paroduct_sales_per_country c
-INNER JOIN 
-    dim_product p 
-    ON p.product_id=c.product_id
-WHERE 
-    rank_quantity=1;
-```
+#### 💼 Business Problem Solved:
+
+📉 Identifies underperforming products in specific regions.
+
+🛑 Helps phase out low-demand products.
+
+📊 Enables better inventory allocation by focusing on higher-demand items.
+
+#### 🌟 Strategic Benefit:
+
+🏆 Improves sales by removing non-performing products.
+
+📦 Optimizes inventory and resource management.
+
+🌍 Tailors product offerings to regional preferences.
 
 
 ### 11) How many warranty claims were filed within 180 days of a product sale?
 -- 19907
 
--- et 3.91 sec
--- option a) Filtered at ON caluse itself, as this clause comes early in query execution plan
-```
-SELECT
-    COUNT(w.claim_id) AS num_of_claims
-FROM
-    fact_warranty w
-JOIN 
-    fact_sales s 
-    ON w.sale_id=s.sale_id AND DATEDIFF(w.claim_date,s.sale_date) <=180;
-```
+![Slide11](https://github.com/user-attachments/assets/fd75b687-d596-417a-877b-9b8dadc1b91e)
+
+#### Business Use Case: 🔍 Monitor post-sale warranty claims within the first 180 days to track early defects.
+
+#### 💼 Business Problem Solved:
+
+🛠️ Identifies products with early reliability issues.
+
+📅 Helps pinpoint manufacturing or design flaws.
+
+🚚 Assists in improving product quality and post-sale service.
+
+#### 🌟 Strategic Benefit:
+
+📈 Enhances product quality and brand trust.
+
+🔧 Minimizes warranty costs by addressing root causes early.
+
+🛒 Strengthens customer retention and satisfaction.
+
 
 
 
 ### 12. What product registered the highest warranty claims whithin 180 days of it's sale?
 --   AirTag with 2764 claims
 
-```
-WITH claims_product_id AS (
-				SELECT
-					COUNT(w.claim_id) AS num_of_claims,
-					s.product_id
-				FROM
-				    fact_warranty w
-				INNER JOIN 
-				    fact_sales s 
-                    ON w.sale_id=s.sale_id AND DATEDIFF(w.claim_date,s.sale_date) <=180
-				GROUP BY 
-                    s.product_id
-),
-product AS (
-	SELECT
-		product_id,
-		product_name
-	FROM
-	    dim_product
-)
-SELECT
-	p.product_name,
-	cp.num_of_claims
-FROM 
-    product p
-JOIN
-    claims_product_id cp 
-    ON p.product_id=cp.product_id
-ORDER BY 
-    cp.num_of_claims DESC;
-```
+![Slide12](https://github.com/user-attachments/assets/330eca6c-20dd-431f-9c5d-732292a10092)
 
+#### Business Use Case: 🚨 Product Quality Monitoring through Warranty Claims
+#### 💼 Business Problem Solved:
+
+🛠️ Highlights products with potential manufacturing or quality issues early on.
+
+📉 Helps in identifying patterns of defects that may lead to recalls or improvements.
+
+🧰 Guides post-sale support and customer satisfaction strategies.
+
+#### 🌟 Strategic Benefit:
+
+📊 Improves product development and quality control.
+
+🏷️ Reduces warranty-related costs.
+
+📈 Enhances customer trust and brand loyalty by addressing issues promptly.
 
 ### 13) How many warranty claims have been filed for products launched in the last two years?
---     iphone 15 Pro Max 320
---     iphone 15         321
---     iphone 15Pro      290
+-- AirTag with the highest claims of 5097 
+-- AirPods Max with the lowest claims of 32
+![Slide13](https://github.com/user-attachments/assets/3263b889-4b24-43ec-944a-1bbadf835eb8)
 
-```
-WITH claim_product_id AS (
-				SELECT
-				s.product_id,
-				w.claim_id
-				FROM
-				fact_warranty w
-				LEFT JOIN 
-				fact_sales s ON
-				w.sale_id=s.sale_id 
-)
+#### Business Use Case: 📉 Monitoring Warranty Claims for New Products
 
-SELECT
-	p.product_name,
-	COUNT(cp.claim_id) AS num_of_claims
-FROM
-    dim_product p
-INNER JOIN
-	claim_product_id cp 
-    ON p.product_id=cp.product_id AND p.launch_date>=(SELECT YEAR(MAX(sale_date))-2 FROM fact_sales) 
-GROUP BY 
-    p.product_name;
-```
+#### 💼 Business Problem Solved:
+
+Tracks warranty claims for products launched within the last two years.
+
+Identifies potential product quality issues early in the product lifecycle.
+
+Helps prioritize improvement actions for products with high claim frequencies.
+
+#### 🌟 Strategic Benefit:
+
+Enables proactive quality control and risk mitigation strategies.
+
+Protects brand reputation by addressing issues promptly.
+
+Supports data-driven decisions for future product development.
 
 ### 14. How many warranty claims have been filed for products launched in the last two years? Also, state the sales as well.
 
-```
-WITH claim_product_id AS (
-				SELECT
-				s.product_id,S.sale_id,
-				w.claim_id
-				FROM
-				fact_warranty w
-				RIGHT JOIN 
-				fact_sales s ON
-				w.sale_id=s.sale_id 
-)
+![Slide14](https://github.com/user-attachments/assets/5e11edf3-ccc6-4c04-a824-66944feb894f)
 
-SELECT
-	p.product_name,
-	COUNT(cp.claim_id) AS num_of_claims,
-	COUNT(cp.sale_id) AS num_of_sales
-FROM
-    dim_product p
-JOIN
-    claim_product_id cp 
-    ON p.product_id=cp.product_id AND
-       p.launch_date>=(SELECT YEAR(MAX(sale_date))-2 FROM fact_sales) 
-GROUP BY 
-    p.product_name;
-```
+Business Use Case same as 13
 
 
 
 ### 15)  List the months in the last 3 years where sales exceeded 5000 units from USA.
+-- All months of 2019, 20220, 
+-- oct, nov, and dec of 2021, and 
+-- mar,apr, oct to dec of 2022 and 
+no months of 2023 and 2024 
 
-```
-SELECT 
-	ss.month_year, 
-	SUM(ss.quantity) AS total_quantity
-FROM
-    (SELECT store_id,country FROM dim_store WHERE country='USA') s
-LEFT JOIN 
-	(SELECT
-	DATE_FORMAT(sale_date, '%m-%Y') AS month_year,store_id,quantity
-	FROM
-	fact_sales
-	WHERE 
-    sale_date>=(SELECT YEAR(MAX(sale_date))-3 FROM fact_sales) 
-    ) ss 
-ON
-    s.store_id=ss.store_id
-GROUP BY 
-    ss.month_year
-HAVING 
-    total_quantity>5000;
-```
+![Slide15](https://github.com/user-attachments/assets/3839e8c6-1131-4bf4-9c24-acdc7da1642e)
 
+#### 🔍 Business Use Case:
+Seasonality & Market Readiness Analysis
+“Identify peak demand periods in specific regions to inform promotional campaigns, staffing, and inventory planning.”
 
+#### 💼 Business Problem Solved:
 
+Pinpoints months of peak sales activity in the U.S. market.
+
+Helps determine when demand surges, enabling better stock and supply chain planning.
+
+Informs marketing timing (e.g., product pushes or holiday promotions) with factual sales data.
+
+#### 🌟 Strategic Benefit:
+
+Enables seasonal sales forecasting and campaign scheduling based on historical trends.
+
+Enhances country-specific market agility and reduces lost sales due to stockouts.
+
+Supports cross-departmental planning—from procurement to marketing.
 
 
 ### 16) Which product category had the most warranty claims filed in the last 2 years?
+SmartPhone.
+![Slide16](https://github.com/user-attachments/assets/46b1fc1b-5f71-4b8d-9df2-ae2736be655c)
 
-```
-WITH product_category_warranty_claims AS (
-					SELECT 
-						c.category_name,
-						(COUNT(w.claim_id)) AS total_claims
-					FROM
-						(SELECT sale_id,claim_id FROM fact_warranty) w
-					LEFT JOIN 
-						(SELECT
-						sale_id,product_id
-						FROM
-						fact_sales
-						WHERE sale_date>=(SELECT YEAR(MAX(sale_date))-2 FROM fact_sales) 
-						) ss 
-						  ON w.sale_id=ss.sale_id
-					INNER JOIN 
-						(
-						SELECT
-						product_id,category_id FROM dim_product
-						) p
-						ON ss.product_id=p.product_id
-					INNER JOIN
-						(
-						SELECT
-						category_id,category_name FROM dim_category
-						) c 
-						ON p.category_id=c.category_id
-					GROUP BY 
-						c.category_id
-),
-rank_of_product_category AS (
-					SELECT
-					    category_name,
-					    DENSE_RANK() OVER(ORDER BY total_claims DESC) AS claims_rank
-					FROM
-					    product_category_warranty_claims
-)
+#### 📦 Warranty Performance by Category
+#### 💼 Business Use Case:
+Evaluate warranty claim trends across product categories to pinpoint areas of concern.
 
-SELECT
-    category_name
-FROM
-    rank_of_product_category
-WHERE
-    claims_rank=1 ;
+#### 🔍 Business Problem Solved:
 
-```
+Identifies categories with potential quality or durability issues.
 
+Highlights need for category-specific quality control or vendor performance review.
 
+Reduces after-sales service burden by targeting frequent-claim products.
+
+#### 🌟 Strategic Benefit:
+
+Improves brand trust and reduces long-term service costs.
+
+Enables category-level warranty forecasting and contract renegotiation.
+
+Supports targeted product improvement and customer satisfaction.
 
 ### 17) Determine the percentage chance of receiving claims after each purchase for each country.
+UAE with the highest of 66 %.
 
+![Slide17](https://github.com/user-attachments/assets/07615b14-c2b1-4e51-9717-339b166484a7)
 
-```
-SELECT
-	s.country,
-	CASE 
-	   WHEN COUNT(w.claim_id)<>0 THEN COUNT(w.claim_id) * 100 /SUM(ss.quantity) ELSE NULL 
-	END AS percentage_chance_receiving_claims
-FROM
-	( SELECT store_id,country FROM dim_store ) s
-INNER JOIN 
-    ( SELECT sale_id,store_id,quantity FROM fact_sales ) ss
-    ON s.store_id=ss.store_id
-LEFT JOIN 
-    ( SELECT claim_id,sale_id FROM fact_warranty ) w
-    ON ss.sale_id=w.sale_id
-GROUP BY 
-	s.country
-ORDER BY 
-    percentage_chance_receiving_claims DESC;
+#### 🌍 Use Case: Country-Level Claim Rate Analysis
+#### 💼 Business Problem Solved:
 
-```
+Highlights regional differences in product performance and customer satisfaction.
 
+Identifies high-risk markets with elevated claim frequencies.
+
+Surfaces potential quality control or environmental issues impacting product longevity.
+
+#### 📊 How It Helps:
+
+Enables prioritization of after-sales support and warranty servicing by geography.
+
+Informs localized product improvements or training for retailers.
+
+##### 🌟 Strategic Benefit:
+
+Enhances brand reputation by reducing post-sale friction in key markets.
+
+Supports risk-based warranty cost forecasting and quality assurance scaling globally.
 
 
 
 ### 18) Analyze each store's yearly growth ratio.
+Most of the stores had a negative yearly growth rate in 2023.
+
+![Slide18](https://github.com/user-attachments/assets/2de38cfd-2898-4ba3-b552-6e773c3bf926)
 
 
-```
-WITH current_year_sales AS (
-    SELECT
-        s.store_name,
-        YEAR(ss.sale_date) AS year,
-        SUM(ss.quantity * p.price) AS current_year_sales
-    FROM 
-        (SELECT price, product_id FROM dim_product) p
-    JOIN 
-        (SELECT sale_date, store_id, product_id, quantity FROM fact_sales) ss 
-    ON 
-        p.product_id = ss.product_id
-    JOIN 
-        (SELECT store_id, store_name FROM dim_store) s 
-    ON 
-        s.store_id = ss.store_id
-    GROUP BY 
-        s.store_name, YEAR(ss.sale_date)
-),
-current_previous_year_sales AS (
-    SELECT
-        *,
-        LAG(current_year_sales) OVER (PARTITION BY store_name ORDER BY year) AS previous_year_sales
-    FROM
-        current_year_sales
-),
-YOY_growth_pct AS (
-    SELECT
-        store_name,
-        year,
-        ROUND((current_year_sales - previous_year_sales) * 100 / previous_year_sales, 0) AS YOY_growth_pct
-    FROM
-        current_previous_year_sales
-    WHERE 
-        previous_year_sales IS NOT NULL 
-        AND year <> YEAR(CURDATE())
-)
-SELECT
-    store_name,
-    SUM(CASE WHEN year = 2020 THEN YOY_growth_pct ELSE NULL END) AS YOY_growth_pct_2020,
-    SUM(CASE WHEN year = 2021 THEN YOY_growth_pct ELSE NULL END) AS YOY_growth_pct_2021,
-    SUM(CASE WHEN year = 2022 THEN YOY_growth_pct ELSE NULL END) AS YOY_growth_pct_2022,
-    SUM(CASE WHEN year = 2023 THEN YOY_growth_pct ELSE NULL END) AS YOY_growth_pct_2023,
-    SUM(CASE WHEN year = 2024 THEN YOY_growth_pct ELSE NULL END) AS YOY_growth_pct_2024
-FROM
-    YOY_growth_pct
-    GROUP BY store_name;
-```
+#### 📈 Business Use Case: Store-Level Growth Analytics
+#### 🔧 Business Problem Solved:
 
+📊 Identifies underperforming vs. high-growth stores year over year.
 
-### 19)  What is the correlation between product price and warranty claims for products sold in the
+🧩 Helps uncover regional trends, seasonality, and expansion opportunities.
+
+⚙️ Enables data-driven decisions on resource allocation and marketing efforts.
+
+#### 🎯 Strategic Benefit:
+
+💰 Drives efficient investment and staffing based on growth trends.
+
+📍 Supports territory planning and localized promotional strategies.
+
+📉 Helps mitigate decline through early detection and intervention.
+
+### 19)  What is the correlation between product price and warranty claims for products sold in the last five years?
 
 --      Expensive is having a negative co-relation, Less Expensive has positive co-relation, Moderately Expensive has zero co-relation
 
+![Slide19](https://github.com/user-attachments/assets/d2c0b6ce-d3de-4e20-8fe9-2c13f61a55cc)
 
-```
-SELECT
-	CASE 
-		WHEN p.price<500 THEN 'Less Expensive'
-		WHEN p.price BETWEEN 500 AND 1000 THEN 'Moderately Expensive'
-		ELSE 'Expensive'
-	END AS price_segments,
-	COUNT(w.claim_id) AS toal_claims    
-FROM
-    (SELECT claim_id,claim_date,sale_id FROM fact_warranty) w
-LEFT JOIN
-    (SELECT sale_id,sale_date,product_id FROM fact_sales WHERE sale_date>(SELECT YEAR(MAX(sale_date))-5 FROM fact_sales) ) ss 
-    ON w.sale_id=ss.sale_id AND
-       w.claim_date>ss.sale_date
-INNER JOIN 
-    (SELECT product_id, price FROM dim_product) p 
-    ON ss.product_id=p.product_id
-GROUP BY 
-    price_segments;
-```
+#### 🛡️ Product Warranty Risk Evaluation Use Case:
+Analyze warranty claim behavior for products sold in the last 2 years to identify high-risk product categories and patterns in post-sale issues.
+
+#### Business Problem Solved:
+
+Identifies which product categories or SKUs lead to more warranty claims, allowing quality control teams to investigate root causes.
+
+Supports product redesign or service process improvements.
+
+#### Strategic Benefit:
+
+Helps reduce warranty-related costs.
+
+Enhances brand trust and customer satisfaction.
+
+Informs better manufacturing and vendor decisions.
 
 
 
 
-### 20) Identify the store with the highest percentage of "Paid Repaired" claims in relation to total
---     claims filed.
-
-```
-WITH paid_repaired_claims AS (
-				SELECT
-					s.store_name,
-					COUNT(w.claim_id) AS paid_repaired_claims
-				FROM (SELECT claim_id,sale_id FROM fact_warranty WHERE repair_status LIKE '%Paid Repaired%') w
-				LEFT JOIN 
-				     (SELECT sale_id,store_id FROM fact_sales ) ss 
-                     ON w.sale_id = ss.sale_id
-				INNER JOIN 
-				     (SELECT store_id,store_name FROM dim_store) s ON ss.store_id = s.store_id
-				GROUP BY 
-                     s.store_name
-) ,
-total_claims AS (
-				SELECT
-					s.store_name,
-					COUNT(w.claim_id) AS total_claims
-				FROM fact_warranty w
-				LEFT JOIN fact_sales ss 
-                     ON w.sale_id = ss.sale_id
-				INNER JOIN dim_store s 
-                     ON ss.store_id = s.store_id
-				GROUP BY 
-                     s.store_name
-), 
-pct_paid_repaired_claims_per_store AS (
-				SELECT
-					prc.store_name,
-					ROUND(prc.paid_repaired_claims*100/tc.total_claims,0) AS pct_paid_repaired_claims
-				FROM
-					paid_repaired_claims prc
-				INNER JOIN 
-					total_claims tc  
-					ON prc.store_name=tc.store_name
-				GROUP BY 
-					prc.store_name
-),
-store_ranking AS (
-				SELECT
-					store_name,
-					DENSE_RANK() OVER(ORDER BY pct_paid_repaired_claims DESC) AS store_rank
-				FROM
-					pct_paid_repaired_claims_per_store
-				)
-
-SELECT
-   store_name
-FROM
-   store_ranking
-WHERE
-   store_rank=1
-
-;
-```
 
 
+### 20) Identify the store with the highest percentage of "Paid Repaired" claims in relation to total claims filed.
+Apple Kurfürstendamm
+![Slide20](https://github.com/user-attachments/assets/22f7fd37-794d-44fd-9fee-a8d1bdfa3e14)
 
-### 21) Calculate the monthly running total sales for each store over the past
---     four years and compare the trends across this period?
+#### 🛠️ Warranty Claims Analysis Based on Launch Timeline
+Use Case: Warranty Monitoring for Recently Launched Products
+
+#### Business Problem Solved: Identifies reliability concerns in newly launched products by tracking the number of warranty claims submitted within the last two years.
+
+#### Strategic Benefit:
+
+✅ Enables early detection of product quality issues
+
+✅ Supports improved vendor or manufacturer accountability
+
+✅ Reduces risk of brand damage due to faulty early-life products
+
+✅ Helps forecast warranty reserve budgets more accurately
 
 
-```
-WITH monthly_sales_each_store AS (
-				SELECT
-					s.store_name,
-					s.store_id,
-					YEAR(ss.sale_date) AS year,
-					MONTH(ss.sale_date) AS month,
-					SUM(ss.quantity*p.price) AS sales
-				FROM
-				    (SELECT product_id,price FROM dim_product)p
-				RIGHT JOIN
-				    (SELECT store_id,product_id,quantity,sale_date FROM fact_sales)ss 
-                    ON p.product_id=ss.product_id
-				INNER JOIN
-				    (SELECT store_id,store_name FROM dim_store)s 
-                    ON ss.store_id=s.store_id
-				GROUP BY 
-                    s.store_id,year,month
-)
+### 21) Calculate the monthly running total sales for each store over the past four years and compare the trends across this period?
 
-SELECT
-	store_name,
-	year,
-	month,
-	sales,
-	SUM(sales) OVER(PARTITION BY store_id ORDER BY store_id, year,month ASC) AS aggregated_monthly_sales
-FROM 
-    monthly_sales_each_store
-;
+![Slide21](https://github.com/user-attachments/assets/0cf586ee-bdff-445d-93cf-dfa8d69319e1)
 
-```
+#### 📈 Use Case: Store-Level Sales Performance Analysis
+#### 💼 Business Problem Solved
+Identifies long-term sales growth patterns across all retail locations.
 
+Highlights top-performing and underperforming stores for performance reviews.
+
+Enables forecasting future demand and budgeting store-level resources.
+
+#### 🎯 Strategic Benefits
+📊 Performance Benchmarking: Track growth momentum for strategic planning and bonuses.
+
+📦 Inventory Management: Adjust restocking based on sales trajectories.
+
+📍 Location Strategy: Refine decisions on expansion or consolidation.
+
+💬 Personalized Coaching: Use growth trends to inform staff development at specific locations.
     
-### 22) Analyze sales trends of product over time, segmented into key time periods: from launch to 6
---     months, 6-12 months, 12-18 months, and beyond 18 months
+### 22) Analyze sales trends of product over time, segmented into key time periods: from launch to 6 months, 6-12 months, 12-18 months, and beyond 18 months.
 
+![Slide22](https://github.com/user-attachments/assets/73f5e72b-462d-44c1-99e8-35ea7fcc8f15)
 
-```
-WITH sales_trend AS (
-			SELECT
-				p.product_name,
-				CASE
-					WHEN s.sale_date > p.launch_date AND 
-                         s.sale_date <= DATE_ADD(p.launch_date, INTERVAL 6 MONTH) 
-					THEN '0-6 Months'
-					WHEN s.sale_date > DATE_ADD(p.launch_date, INTERVAL 6 MONTH) AND 
-                         s.sale_date <= DATE_ADD(p.launch_date, INTERVAL 12 MONTH) 
-					THEN '6-12 Months'
-					WHEN s.sale_date > DATE_ADD(p.launch_date, INTERVAL 12 MONTH) AND 
-                         s.sale_date <= DATE_ADD(p.launch_date, INTERVAL 18 MONTH) 
-					THEN '12-18 Months'
-					WHEN s.sale_date > DATE_ADD(p.launch_date, INTERVAL 18 MONTH) 
-                    THEN '18+ Months'
-				END AS sales_period,
-				SUM(p.price * s.quantity) AS sales
-			FROM
-				(SELECT product_id, product_name, launch_date, price FROM dim_product) p
-			JOIN
-				(SELECT sale_date, product_id, quantity FROM fact_sales) s
-			ON
-				p.product_id = s.product_id
-			WHERE 
-				s.sale_date>p.launch_date
-			GROUP BY
-				p.product_name,
-				sales_period
-)
+#### 🧮 Warranty Claims Intelligence by Launch Year
+Use Case: Track warranty claims for newly launched products to assess post-launch quality and readiness.
 
-SELECT
-    product_name,
-    sales_period,
-    sales
-FROM
-    sales_trend
-ORDER BY
-    product_name,
-    FIELD(sales_period, '0-6 Months', '6-12 Months', '12-18 Months', '18+ Months');
-```
+### 📌 Business Solved:
 
+Detect early reliability issues with new models.
 
+Validate product readiness at launch.
+
+Allocate support and warranty budget more accurately.
+
+### 🎯 Strategic Benefit:
+
+Supports launch quality assurance.
+
+Enhances brand trust by ensuring post-launch reliability.
+
+Drives predictive warranty modeling for future rollouts.
 
 
 
 ### 23) Advanced Warranty Claim Trends: Analyze trends in warranty claims compared to product sales over the past two years from the last sales date available.
 
--- MAX aggregate function cannot be used in where clause and case function without using group by
--- product_sales increased and pct_warranty_claims halved indicating product improvement 
 
-```
-WITH date_ranges AS (
-	  SELECT 
-		MAX(s.sale_date) AS latest_sale_date,
-		DATE_ADD(MAX(s.sale_date), INTERVAL -1 YEAR) AS last_year_start_date,
-		DATE_ADD(MAX(s.sale_date), INTERVAL -2 YEAR) AS second_last_year_start_date
-	  FROM 
-		fact_sales s
-),
-last_two_years_sales_and_warranty_trend AS (
-	SELECT
-	  CASE 
-		WHEN s.sale_date > d.last_year_start_date THEN 'last_year'
-		WHEN s.sale_date > d.second_last_year_start_date AND s.sale_date <= d.last_year_start_date THEN 'second_last_year'
-	  END AS TREND,
-	  SUM(s.quantity) AS product_sales,
-	  COUNT(w.claim_id) AS warranty_claims
-	FROM 
-	  fact_sales s
-	LEFT JOIN 
-	  fact_warranty w ON s.sale_id = w.sale_id
-	CROSS JOIN 
-	  date_ranges d
-	WHERE 
-	  s.sale_date > d.second_last_year_start_date AND 
-      s.sale_date <= d.latest_sale_date
-	GROUP BY 
-	  TREND
-)
-SELECT
-	 TREND,
-     product_id,
-	 product_sales,
-	 warranty_claims,
-	 ROUND(warranty_claims*100.0/COALESCE(NULLIF(product_sales,0),1),2) AS pct_warranty_claims
-FROM
-     last_two_years_sales_and_warranty_trend;
-```     
-     
+![23](https://github.com/user-attachments/assets/d160e969-7f8d-4b29-8f0c-cfe86e97ab64)
+
+### Business Use Case: Compare warranty claims to sales volume for each product, helping identify reliability issues over time.
+
+#### 💼 Business Problem Solved:
+
+Surfaces products with disproportionately high warranty claims.
+
+Enables proactive action: improved product design, enhanced customer support, or recall decisions.
+
+Helps correlate claim spikes with specific product batches or timeframes.
+
+#### 🌟 Strategic Benefit:
+Supports both warranty cost management and customer satisfaction improvement.    
 
 ### 24) product performance by average_pct_growth 
+Apple Watch Series 4 registered growth of 614.57 %
+![Slide24](https://github.com/user-attachments/assets/0906ae87-04f1-4b4a-a830-d70acb7a52c9)
 
-```
-WITH product_units_sold AS (
-				SELECT
-					p.product_id,
-					YEAR(sale_date) AS year,
-					SUM(quantity) AS units_sold
-				FROM
-				    dim_product p
-				LEFT JOIN
-				    fact_sales s
-				    USING(product_id)
-				WHERE YEAR(sale_date)<>(SELECT YEAR(MAX(sale_date)) FROM fact_sales )
-				GROUP BY 
-				    p.product_id,YEAR(sale_date)
-),
-units_sold_comparison AS (
-				SELECT
-				product_id,
-				year,
-				units_sold,
-				LAG(units_sold) OVER (PARTITION BY product_id) AS last_year_units_sold
-				FROM
-				product_units_sold
-),
-growth_units_sold AS  (
-				SELECT 
-				product_id,
-				year,
-				(units_sold-last_year_units_sold)*100.0/last_year_units_sold AS pct_growth_units_sold
-				FROM
-				units_sold_comparison
-)
+#### Business Use Case: Product Performance by Average Percentage Growth
 
-SELECT
-	product_id,
-	ROUND(AVG(pct_growth_units_sold),2)  AS avg_growth_units_sold
-FROM
-    growth_units_sold
-GROUP BY
-    product_id
-ORDER BY 
-    avg_growth_units_sold DESC;
-```
+#### 💼 Business Problem Solved:
 
+Identifies products with the highest and lowest growth rates.
+
+Helps prioritize marketing efforts and stock allocation.
+
+Assesses the effectiveness of promotional campaigns and product strategies.
+
+#### 🌟 Strategic Benefit:
+
+Provides insights for demand forecasting and inventory optimization.
+
+Supports product development decisions and pricing adjustments based on growth trends.
 
 ### 25) Product Performance Analysis: Analyze sales performance over five years and identify the top 10 products with the highest percentage growth in units sold.
 
+Apple Watch Series 4		614.57
+iPad (6th Gen)			549.90
+iPhone XS			543.79
+MacBook Pro (M1, 13-inch)	15.31
+HomePod mini			14.40
+iPhone 12 Mini			12.47
+iPad Pro (M2, 12.9-inch)	11.49
+Mac mini (M1)			7.21
+iPad (10th Gen)			4.33
+MacBook Air (M1)		4.04
 
-```
-WITH sales_by_year AS (
-		  SELECT
-			product_id,
-			YEAR(sale_date) AS sale_year,
-			SUM(quantity) AS total_units
-		  FROM
-			fact_sales
-		  WHERE
-			YEAR(sale_date) <> (SELECT YEAR(MAX(sale_date)) FROM fact_sales)
-		  GROUP BY
-			product_id, YEAR(sale_date)
-),
-min_max_years AS (
-		  SELECT
-			product_id,
-			MIN(sale_year) AS start_year,
-			MAX(sale_year) AS end_year
-		  FROM
-			sales_by_year
-		  GROUP BY
-			product_id
-),
-start_end_units AS (
-		  SELECT
-			s.product_id,
-			m.start_year,
-			m.end_year,
-			MAX(CASE WHEN s.sale_year = m.start_year THEN s.total_units END) AS start_units,
-			MAX(CASE WHEN s.sale_year = m.end_year THEN s.total_units END) AS end_units
-		  FROM
-			sales_by_year s
-		  JOIN
-			min_max_years m ON s.product_id = m.product_id
-		  GROUP BY
-			s.product_id, m.start_year, m.end_year
-),
-growth_calc AS (
-		  SELECT
-			product_id,
-			start_units,
-			end_units,
-			ROUND((end_units - start_units) * 100.0 /
-            COALESCE(NULLIF(start_units, 0),1), 2) AS pct_growth
-		  FROM
-			start_end_units
-		  WHERE
-			start_units IS NOT NULL AND end_units IS NOT NULL
-)
+![Slide25](https://github.com/user-attachments/assets/07ae97ac-51d4-48e5-913b-7134ef983834)
 
-SELECT 
-		product_id,
-	    start_units,
-		end_units,
-        pct_growth
-FROM 
-        growth_calc
-ORDER BY 
-        pct_growth DESC
-;
+#### Business Use Case: Product Performance Analysis
 
-```
+#### 💼 Business Problem Solved:
+
+Identifies the top-performing products over the last five years.
+
+Unveils growth patterns and shifts in product demand.
+
+Guides stock replenishment and marketing focus based on high-growth products.
+
+#### 🌟 Strategic Benefit:
+
+Helps in optimizing product portfolios by focusing on high-growth items.
+
+Drives marketing campaigns to support trending products.
+
+Aids in inventory management by identifying products that need scaling based on performance.
 
 ### 26) Product Lifetime Value per year
+MacBook Pro (M1 Max, 16-inch)	with the highest 145481803.36
+HomePod mini	with the lowest	 530816.82
+![Slide26](https://github.com/user-attachments/assets/547dbe35-8199-426e-8137-1624a865842c)
 
-```
-WITH product_sales_summary AS (
-			  SELECT
-				product_id,
-				MIN(sale_date) AS first_sale_date,
-				MAX(sale_date) AS last_sale_date,
-				COUNT(DISTINCT sale_id) AS total_purchases,
-				SUM(quantity * price) AS total_revenue,
-				COUNT(DISTINCT YEAR(sale_date)) AS active_years
-			  FROM
-				fact_sales
-			  LEFT JOIN 
-				dim_product
-				USING(product_id)
-			  GROUP BY
-				product_id
-),
-product_ltv_calc AS (
-			  SELECT
-				product_id,
-				total_purchases,
-				total_revenue,
-				DATEDIFF(last_sale_date, first_sale_date) / 365.0 AS lifespan_years,
-				ROUND(total_revenue / COALESCE(NULLIF(total_purchases, 0),1), 2) AS avg_order_value,
-				ROUND(total_purchases / 
-                      COALESCE(NULLIF(DATEDIFF(last_sale_date, first_sale_date) / 
-                               365.0, 0),1), 
-					  2) AS purchase_freq_per_year
-			  FROM
-				product_sales_summary
-),
-final_calc AS (
-			  SELECT
-				product_id,
-				total_revenue,
-				lifespan_years,
-				avg_order_value,
-				purchase_freq_per_year,
-				ROUND(purchase_freq_per_year * avg_order_value * lifespan_years, 2) AS product_lifetime_value
-			  FROM
-				product_ltv_calc
-)
+#### Business Use Case: Product Lifetime Value Analysis
 
-SELECT 
-   product_id,
-   total_revenue,
-   lifespan_years,
-   avg_order_value,
-   purchase_freq_per_year,
-   product_lifetime_value
-FROM 
-   final_calc
-ORDER BY 
-   product_lifetime_value DESC
-LIMIT 10;
-```
+#### 💼 Business Problem Solved:
 
+Calculates the projected value of a product over its lifespan.
 
+Helps in assessing the long-term profitability of products.
+
+Guides decision-making on pricing, promotions, and product development.
+
+#### 🌟 Strategic Benefit:
+
+Optimizes product development strategies by focusing on high-value products.
+
+Enhances customer retention strategies based on product value.
+
+Supports financial forecasting by understanding future product revenue streams.
 
 
 ### 27) Product Lifetime Value per MONTH
 
+same as 26.
 
-```
-WITH product_sales_summary AS (
-				  SELECT
-					product_id,
-					MIN(sale_date) AS first_sale_date,
-					MAX(sale_date) AS last_sale_date,
-					COUNT(DISTINCT sale_id) AS total_purchases,
-					SUM(quantity * price) AS total_revenue
-				  FROM
-					fact_sales
-				  LEFT JOIN
-					dim_product
-					USING(product_id)
-				  GROUP BY
-					product_id
-),
-product_ltv_calc AS (
-				  SELECT
-					product_id,
-					total_purchases,
-					total_revenue,
-					TIMESTAMPDIFF(MONTH, first_sale_date, last_sale_date) AS lifespan_months,
-					ROUND(total_revenue / COALESCE(NULLIF(total_purchases, 0),1), 2) AS avg_order_value,
-					ROUND(total_purchases /
-                          COALESCE(NULLIF(TIMESTAMPDIFF(MONTH, first_sale_date, last_sale_date), 0),1), 
-                          2
-                          ) AS purchase_freq_per_month
-				  FROM
-					product_sales_summary
-),
-final_calc AS (
-	  SELECT
-		product_id,
-		total_revenue,
-		lifespan_months,
-		avg_order_value,
-		purchase_freq_per_month,
-		ROUND(purchase_freq_per_month * avg_order_value * lifespan_months, 2) AS product_lifetime_value
-	  FROM
-		product_ltv_calc
-)
-
-SELECT 
-   product_id,
-   total_revenue,
-   lifespan_months,
-   avg_order_value,
-   purchase_freq_per_month,
-   product_lifetime_value
-FROM 
-   final_calc
-ORDER BY 
-   product_lifetime_value DESC
-LIMIT 10;
-```
-
+![Slide27](https://github.com/user-attachments/assets/849b231c-e9af-4837-b8f2-70e5d7f8cc95)
 
 
 
