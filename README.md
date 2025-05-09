@@ -64,6 +64,8 @@ in
 -- Apple South Coast Plaza had sold the highest units of 47498.
 -- Apple Sheffield had sold the lowest units of 647.
 
+
+
 ```
 SELECT
     st.store_name AS store_name,
