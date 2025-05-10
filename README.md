@@ -60,27 +60,34 @@ in
 ## Indexes
 
 ```
-CREATE INDEX fact_sales_store_id ON fact_sales(store_id);
-CREATE INDEX fact_sales_sale_id ON fact_sales(sale_id);
+CREATE CLUSTERED INDEX fact_sales_store_id ON fact_sales(store_id);
+CREATE NONCLUSTERED INDEX idx_product_id ON dim_product(product_id);
+CREATE CLUSTERED INDEX fact_sales_sale_id ON fact_sales(sale_id);
 CREATE INDEX fact_sales_sale_date ON fact_sales(sale_date);
 CREATE INDEX idx_sale_date_product_id ON fact_sales(sale_date, product_id);
 ```
 
-## Optimization Techniques
+## Query Optimization Techniques used are as follows: 
 1) Filtering Data at ON clause itself to limit the data after Join.
 2) Filtering Data from the main table itself to limit the data during Join.
 3) No use of any functions in WHERE caluse in order to avoid full table scan.
 4) Sorting the data in the same order while referencing any table to reduce sorting time.
 5) Applying Indexes on frequently used columns in order to avoid full table scan, achieve pre sorted data.
 
-## Execution Time reduction/efficeincy in %
+## Execution Plan Efficiency:
 
-### Minimum of 9% for Q2
-Example: et of option a) was 33.87 sec and for b) was 30 sec  which improved the execution time by around 9 %
 
-### Maximum of 80% for Q28
-Example: et of option a) was 5520 sec and for b) was 1080 sec  which improved the execution time by around 80 %
-Approach: Use of 
+### Approach: Q28)
+Filtering data from both sales and products tables before the join operation reduced the operator cost from 13% to 5%, and the use of a clustered and non-clustered Index Enabled index scan on product_id & sale_id and  product_name, respectively, instead of a Table Scan.
+
+#### Cluster Column Index Scan Cost: Before & After
+![Slide1](https://github.com/user-attachments/assets/872dbdcc-86e4-4bc9-af5d-e48819c99c04)
+
+
+#### Hash Join Cost: Before & After
+![Slide2](https://github.com/user-attachments/assets/c833bf1a-0fea-49f9-880e-466335114d77)
+
+
 
 
 ### 📊 Use Case Summary Table
