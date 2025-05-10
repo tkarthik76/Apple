@@ -57,6 +57,31 @@ in
 )
 ```
 
+## Indexes
+
+```
+CREATE INDEX fact_sales_store_id ON fact_sales(store_id);
+CREATE INDEX fact_sales_sale_id ON fact_sales(sale_id);
+CREATE INDEX fact_sales_sale_date ON fact_sales(sale_date);
+CREATE INDEX idx_sale_date_product_id ON fact_sales(sale_date, product_id);
+```
+
+## Optimization Techniques
+1) Filtering Data at ON clause itself to limit the data after Join.
+2) Filtering Data from the main table itself to limit the data during Join.
+3) No use of any functions in WHERE caluse in order to avoid full table scan.
+4) Sorting the data in the same order while referencing any table to reduce sorting time.
+5) Applying Indexes on frequently used columns in order to avoid full table scan, achieve pre sorted data.
+
+## Execution Time reduction/efficeincy in %
+
+### Minimum of 9% for Q2
+Example: et of option a) was 33.87 sec and for b) was 30 sec  which improved the execution time by around 9 %
+
+### Maximum of 80% for Q28
+Example: et of option a) was 5520 sec and for b) was 1080 sec  which improved the execution time by around 80 %
+Approach: Use of 
+
 
 ### 📊 Use Case Summary Table
 
