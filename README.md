@@ -68,11 +68,11 @@ CREATE INDEX idx_sale_date_product_id ON fact_sales(sale_date, product_id);
 ```
 
 ## Query Optimization Techniques used are as follows: 
-1) Filtering Data at ON clause itself to limit the data after Join.
-2) Filtering Data from the main table itself to limit the data during Join.
-3) No use of any functions in WHERE caluse in order to avoid full table scan.
+1) Filtering Data at the ON clause itself to limit the data after the Join.
+2) Filtering Data from the main table itself to limit the data during the Join.
+3) No use of any functions in the WHERE clause to avoid a full table scan.
 4) Sorting the data in the same order while referencing any table to reduce sorting time.
-5) Applying Indexes on frequently used columns in order to avoid full table scan, achieve pre sorted data.
+5) Applying Indexes on frequently used columns to avoid a full table scan, achieve pre-sorted data.
 
 ## Execution Plan Efficiency:
 
