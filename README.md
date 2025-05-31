@@ -10,10 +10,18 @@
 
 ---
 
-### 💼 Business Use Case
+## 💼 Business Use Case
 
 > **This project showcases how advanced data querying and analytics can be used to uncover critical business insights for Apple retail and product strategy — such as identifying underperforming stores, analyzing product and warranty trends, and optimizing sales forecasting — all through real-world, enterprise-scale questions.**
 
+
+## Table of Contents
+- [Data Structure & Entity Relationship Diagram (ERD)](#data-structure--entity-relationship-diagram-erd)
+- [ Data Cleaning ](#-data-cleaning)
+- [Indexes](#indexes)
+- [Query Optimization](#query-optimization-techniques-used-are-as-follows)
+- [Execution Plan Efficiency](#execution-plan-efficiency)
+- [Use Case Summary Table](#-use-case-summary-table)
 ## Data Structure & Entity Relationship Diagram (ERD)
 The Apple database comprises five tables: `dim_category`, `dim_product`, `fact_sales`, `fact_warranty`,`dim_store`.
 
